@@ -4,6 +4,7 @@ using System.Reflection;
 using LastFmScrobbler.Config;
 using Newtonsoft.Json;
 using SiraUtil.Tools;
+using SiraUtil.Logging;
 using Zenject;
 
 namespace LastFmScrobbler.Managers

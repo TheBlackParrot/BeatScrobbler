@@ -13,7 +13,7 @@ namespace LastFmScrobbler.UI
         public MenuButtonHandler(ScrobblerFlowCoordinator flowCoordinator)
         {
             _flowCoordinator = flowCoordinator;
-            _menuButton = new MenuButton("Scrobbler", OnClick);
+            _menuButton = new MenuButton("BeatScrobbler", OnClick);
         }
 
         public void Dispose()

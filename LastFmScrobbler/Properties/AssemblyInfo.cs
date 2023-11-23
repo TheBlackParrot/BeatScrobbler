@@ -1,18 +1,18 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("LastFmScrobbler")]
+[assembly: AssemblyTitle("BeatScrobbler")]
 [assembly: AssemblyDescription("Last.fm scrobbler for Beat Saber")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("LastFmScrobbler")]
-[assembly: AssemblyCopyright("Copyright © Ifropc 2021")]
+[assembly: AssemblyProduct("BeatScrobbler")]
+[assembly: AssemblyCopyright("Copyright © hyperobject 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
 
-[assembly: Guid("e8ea7eed-a4cb-4105-931f-ab1d15c3dbcc")]
+[assembly: Guid("4c90055c-6c75-444f-9aa2-448ef96bcc07")]
 
-[assembly: AssemblyVersion("1.0.4")]
-[assembly: AssemblyFileVersion("1.0.4")]
+[assembly: AssemblyVersion("2.0.0")]
+[assembly: AssemblyFileVersion("2.0.0")]

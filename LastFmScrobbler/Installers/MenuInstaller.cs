@@ -2,7 +2,7 @@
 using LastFmScrobbler.Managers;
 using LastFmScrobbler.UI;
 using SiraUtil;
-using SiraUtil.Tools;
+using SiraUtil.Logging;
 using Zenject;
 
 namespace LastFmScrobbler.Installers
@@ -22,7 +22,7 @@ namespace LastFmScrobbler.Installers
             Container.Bind<ScrobblerConfigView>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<NotAuthorizedView>().FromNewComponentAsViewController().AsSingle();
             Container.Bind<AuthorizedView>().FromNewComponentAsViewController().AsSingle();
-            Container.Bind<ScrobblerFlowCoordinator>().FromNewComponentOnNewGameObject(nameof(ScrobblerFlowCoordinator)).AsSingle();
+            Container.Bind<ScrobblerFlowCoordinator>().FromNewComponentOnNewGameObject().AsSingle();
             Container.BindInterfacesAndSelfTo<MenuButtonHandler>().AsSingle();
 
             _log.Debug("Finished setting up UI");
@@ -38,7 +38,7 @@ namespace LastFmScrobbler.Installers
 
             if (!cfg.IsAuthorized())
             {
-                _log.Warning("Client is not authorized, scrobbler is disabled.");
+                _log.Warn("Client is not authorized, scrobbler is disabled.");
                 return;
             }
             Container.BindInterfacesAndSelfTo<SongManager>().AsSingle();

@@ -20,15 +20,12 @@ namespace LastFmScrobbler
             _log = log;
 
             var config = cfg.Generated<MainConfig>();
-            config.Version = metadata.Version;
+            config.Version = metadata.HVersion;
 
-            injector.On<PCAppInit>().Pseudo(container =>
-            {
-                container.BindLoggerAsSiraLogger(log);
-                container.BindInstance(config).AsSingle();
-            });
-
-            injector.OnMenu<Installers.MenuInstaller>();
+            injector.UseLogger(log);
+            injector.Install(Location.App, Container => { Container.BindInstance(config).AsSingle(); });
+            injector.Install<Installers.MenuInstaller>(Location.Menu);
+            injector.UseAutoBinder();
 
             _log.Debug("Finished plugin initialization");
         }

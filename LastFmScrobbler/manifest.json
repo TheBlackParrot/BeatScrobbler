@@ -1,14 +1,14 @@
 ﻿{
   "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
-  "id": "LastFmScrobbler",
-  "name": "LastFmScrobbler",
-  "author": "Ifropc",
-  "version": "1.0.4",
+  "id": "BeatScrobbler",
+  "name": "BeatScrobbler",
+  "author": "hyperobject",
+  "version": "2.0.0",
   "description": "Allows to scrobble played songs to last.fm",
-  "gameVersion": "1.13.5",
+  "gameVersion": "1.29.0",
   "dependsOn": {
-    "BSIPA": "^4.1.6",
-    "SiraUtil": "^2.5.2",
-    "BeatSaberMarkupLanguage": "^1.5.1"
+    "BSIPA": "^4.2.2",
+    "SiraUtil": "^3.1.2",
+    "BeatSaberMarkupLanguage": "^1.6.10"
   }
 }

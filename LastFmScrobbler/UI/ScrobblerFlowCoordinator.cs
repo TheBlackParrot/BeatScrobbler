@@ -21,7 +21,7 @@ namespace LastFmScrobbler.UI
         {
             if (firstActivation)
             {
-                SetTitle("LastFm Scrobbler");
+                SetTitle("BeatScrobbler");
                 showBackButton = true;
                 ProvideInitialViewControllers(_configView);
             }

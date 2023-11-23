@@ -4,7 +4,7 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using LastFmScrobbler.Utils;
-using SiraUtil.Tools;
+using SiraUtil.Logging;
 using Zenject;
 
 namespace LastFmScrobbler.UI

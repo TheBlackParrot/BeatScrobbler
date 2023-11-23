@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
 using IPA.Config.Stores.Attributes;
 using SiraUtil.Converters;
-using Version = SemVer.Version;
+using Version = Hive.Versioning.Version;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 
@@ -15,7 +15,7 @@ namespace LastFmScrobbler.Config
 
         [NonNullable]
         [UseConverter(typeof(VersionConverter))]
-        public Version Version { get; set; } = new("0.0.0");
+        public Version Version { get; set; } = new("2.0.0");
 
         public virtual string? SessionName { get; set; } = null;
 

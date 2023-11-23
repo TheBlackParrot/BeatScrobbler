@@ -90,7 +90,7 @@ namespace LastFmScrobbler.UI
         [UIAction("clicked-github")]
         protected void ClickedGithub()
         {
-            ShowInfoModal(() => _linksOpener.OpenLink("https://github.com/Ifropc/LastFmScrobbler"));
+            ShowInfoModal(() => _linksOpener.OpenLink("https://github.com/furryaccount/BeatScrobbler"));
         }
     }
 }
