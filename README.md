@@ -1,7 +1,7 @@
 ﻿# LastFm scrobbler for Beat Saber 1.29.0
 This plugin allows you to submit tracks you play in game to [last.fm](https://www.last.fm)
 
-**PLEASE NOTE THAT THIS MOD IS PROVIDED AS-IS WITH NO GUARANTEE OF SUPPORT. I HAVE NO IDEA WHAT I AM DOING**
+## PLEASE NOTE THAT THIS MOD IS PROVIDED AS-IS WITH NO GUARANTEE OF SUPPORT. I HAVE NO IDEA WHAT I AM DOING
 
 ## Dependencies
 * BSIPA 4.1.6+
