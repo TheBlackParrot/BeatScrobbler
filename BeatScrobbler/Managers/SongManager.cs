@@ -112,12 +112,15 @@ public class SongManager : IInitializable, IDisposable
 
     private async Task OnLevelFinished(BeatmapLevel beatmapLevel, LevelCompletionResults results)
     {
-        if (beatmapLevel.songDuration < 30 ||
-            results.endSongTime < beatmapLevel.songDuration * (_config.SongScrobbleLength / 100f) ||
-            string.IsNullOrEmpty(beatmapLevel.songAuthorName))
+        if (results.endSongTime < 240)
         {
-            Plugin.Log.Info("Not scrobbling");
-            return;
+            if (beatmapLevel.songDuration < 30 ||
+                results.endSongTime < beatmapLevel.songDuration * (_config.SongScrobbleLength / 100f) ||
+                string.IsNullOrEmpty(beatmapLevel.songAuthorName))
+            {
+                Plugin.Log.Info("Not scrobbling");
+                return;
+            }
         }
 
         string trackName = string.IsNullOrEmpty(beatmapLevel.songSubName)
