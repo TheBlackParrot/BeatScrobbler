@@ -13,6 +13,8 @@ public class ScrobblerConfigView : AbstractView
     public event Action<bool>? AuthClicked;
 
     [Inject] private readonly MainConfig _config = null!;
+    
+    public string PercentageFormatter(int x) => $"{x:N0}%";
 
     private bool _authorized;
 
@@ -72,7 +74,7 @@ public class ScrobblerConfigView : AbstractView
     [UIValue("auth-text")]
     public string AuthText => Authorized ? $"Logged in as {_config.SessionName}" : "Not authorized";
 
-    [UIValue("auth-color")] public string AuthColor => Authorized ? "#32cd30" : "#ff2768";
+    [UIValue("auth-color")] public string AuthColor => Authorized ? "#00ff00" : "#ff0000";
 
     public void Initialize()
     {
