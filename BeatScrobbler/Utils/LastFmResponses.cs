@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace BeatScrobbler.Utils;
 
@@ -47,7 +46,7 @@ public class ScrobbleAttribute
 public class ScrobbleData
 {
     [JsonProperty(PropertyName = "ignoredMessage")]
-    public IgnoredMessage IgnoredMessage { get; set; }
+    public IgnoredMessage IgnoredMessage { get; set; } = null!;
 }
 
 public class IgnoredMessage {
@@ -55,5 +54,5 @@ public class IgnoredMessage {
     public int Code { get; set; }
     
     [JsonProperty(PropertyName = "#text")]
-    public string Text { get; set; }
+    public string Text { get; set; } = null!;
 }

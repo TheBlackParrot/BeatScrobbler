@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using BeatScrobbler.Config;
 using BeatScrobbler.Utils;
 using SiraUtil.Services;
@@ -16,7 +16,7 @@ public class SongManager : IInitializable, IDisposable
     [Inject] private readonly ILevelFinisher _levelFinisher = null!;
     [Inject] private readonly GameScenesManager _gameScenesManager = null!;
 
-    private IPreviewBeatmapLevel? _lastBeatmap;
+    private BeatmapLevel? _lastBeatmap;
     private CurrentSongData? _songData;
 
     public void Initialize()
@@ -33,32 +33,32 @@ public class SongManager : IInitializable, IDisposable
         _gameScenesManager.transitionDidFinishEvent -= TransitionFinished;
     }
 
-    private void TransitionFinished(ScenesTransitionSetupDataSO _, DiContainer container)
+    private void TransitionFinished(GameScenesManager.SceneTransitionType sceneTransitionType, ScenesTransitionSetupDataSO scenesTransitionSetupDataSo, DiContainer container)
     {
-        if (container.HasBinding<IDifficultyBeatmap>())
+        if (container.HasBinding<BeatmapLevel>())
         {
-            var beatmap = container.Resolve<IDifficultyBeatmap>();
+            BeatmapLevel? beatmap = container.Resolve<BeatmapLevel>();
             PlayerDataModel? player = container.Resolve<PlayerDataModel>();
-            OnLevelStarted(beatmap.level, player.playerData?.practiceSettings?.startSongTime ?? 0);
+            _ = OnLevelStarted(beatmap, player.playerData?.practiceSettings?.startSongTime ?? 0);
         }
     }
 
     private void StandardFinished(LevelCompletionResults results)
     {
-        OnLevelFinished(results);
+        _ = OnLevelFinished(results);
     }
 
     private void MissionFinished(MissionCompletionResults missionResults)
     {
-        OnLevelFinished(missionResults.levelCompletionResults);
+        _ = OnLevelFinished(missionResults.levelCompletionResults);
     }
 
     // For 2 methods below check https://www.last.fm/api/scrobbling for more info
-    private async void OnLevelStarted(IPreviewBeatmapLevel currentBeatmap, float offset)
+    private async Task OnLevelStarted(BeatmapLevel currentBeatmap, float offset)
     {
         _lastBeatmap = currentBeatmap;
-        bool shouldBeScrobbled = _lastBeatmap.songDuration.TotalSeconds() > 30;
-        var time = DateTime.Now.ToUnixTime();
+        bool shouldBeScrobbled = _lastBeatmap.songDuration > 30;
+        long time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         if (string.IsNullOrEmpty(_lastBeatmap.songAuthorName))
         {
@@ -88,7 +88,7 @@ public class SongManager : IInitializable, IDisposable
         _songData = new CurrentSongData(offset, shouldBeScrobbled, time);
     }
 
-    private async void OnLevelFinished(LevelCompletionResults results)
+    private async Task OnLevelFinished(LevelCompletionResults results)
     {
         CurrentSongData? toScrobble = _songData;
 
@@ -107,7 +107,7 @@ public class SongManager : IInitializable, IDisposable
 
         try
         {
-            ScrobbleResponse? res = await _client.SendScrobble(
+            ScrobbleResponse res = await _client.SendScrobble(
                 _lastBeatmap.songAuthorName,
                 _lastBeatmap.songName,
                 toScrobble.StartTimestamp
@@ -115,9 +115,8 @@ public class SongManager : IInitializable, IDisposable
 
             if (res.Scrobbles.Attribute.Accepted != 1)
             {
-                IgnoredMessage? ignoredMessage = res.Scrobbles.Data.IgnoredMessage;
+                IgnoredMessage ignoredMessage = res.Scrobbles.Data.IgnoredMessage;
                 _log.Warn($"Scrobble was rejected with code: {ignoredMessage.Code}, message: {ignoredMessage.Text}");
-                // TODO: cache failing scrobbles and re-submit them later 
             }
         }
         catch (Exception e)

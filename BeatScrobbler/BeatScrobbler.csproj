@@ -117,4 +117,8 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="credentials.json" LogicalName="BeatScrobbler.credentials.json"/>
+  </ItemGroup>
 </Project>

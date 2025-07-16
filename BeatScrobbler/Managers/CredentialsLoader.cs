@@ -28,6 +28,6 @@ public class CredentialsLoader : ICredentialsLoader
         using StreamReader reader = new StreamReader(stream);
         LastFmCredentials? credentials = JsonConvert.DeserializeObject<LastFmCredentials>(reader.ReadToEnd());
         _log.Debug("Credentials loaded");
-        return credentials;
+        return credentials!;
     }
 }
