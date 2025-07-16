@@ -83,9 +83,9 @@ public class SongManager : IInitializable, IDisposable
             return;
         }
 
-        if (string.IsNullOrEmpty(_startedBeatmapLevel.songAuthorName))
+        if (string.IsNullOrEmpty(_startedBeatmapLevel.songAuthorName) || _startedBeatmapLevel.songDuration < 30)
         {
-            Plugin.Log.Info("Skipping song with empty author name");
+            Plugin.Log.Info("Not sending now playing request");
             return;
         }
 
