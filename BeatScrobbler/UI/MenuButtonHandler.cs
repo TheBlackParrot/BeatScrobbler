@@ -1,10 +1,12 @@
 ﻿using System;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.MenuButtons;
+using JetBrains.Annotations;
 using Zenject;
 
 namespace BeatScrobbler.UI;
 
+[UsedImplicitly]
 public class MenuButtonHandler : IInitializable, IDisposable
 {
     private readonly ScrobblerFlowCoordinator _flowCoordinator;
