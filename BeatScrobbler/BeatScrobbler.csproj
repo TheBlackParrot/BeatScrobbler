@@ -128,5 +128,9 @@
   
   <ItemGroup>
     <EmbeddedResource Include="credentials.json" LogicalName="BeatScrobbler.credentials.json"/>
+    
+    <EmbeddedResource Include="UI\Views\authorized-view.bsml" LogicalName="BeatScrobbler.UI.Views.authorized-view.bsml"/>
+    <EmbeddedResource Include="UI\Views\config-view.bsml" LogicalName="BeatScrobbler.UI.Views.config-view.bsml"/>
+    <EmbeddedResource Include="UI\Views\not-authorized-view.bsml" LogicalName="BeatScrobbler.UI.Views.not-authorized-view.bsml"/>
   </ItemGroup>
 </Project>
