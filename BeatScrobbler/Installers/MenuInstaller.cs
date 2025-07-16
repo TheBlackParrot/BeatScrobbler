@@ -1,7 +1,6 @@
 ﻿using BeatScrobbler.Config;
 using BeatScrobbler.Managers;
 using BeatScrobbler.UI;
-using SiraUtil;
 using SiraUtil.Logging;
 using Zenject;
 

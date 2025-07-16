@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,14 +49,14 @@ public class LastFmClient : IInitializable
     {
         _log.Debug("Sending auth request");
 
-        string url = $"{LAST_FM_BASE_URL}/auth/?api_key={_credentials.Key}&token={authToken!}";
+        string url = $"{LAST_FM_BASE_URL}/auth/?api_key={_credentials.Key}&token={authToken}";
 
         _linksOpener.OpenLink(url);
     }
 
     public async Task<AuthSession> GetSession(string token)
     {
-        Dictionary<string, string> parameters = new Dictionary<string, string>
+        Dictionary<string, string> parameters = new()
         {
             {"method", "auth.getSession"},
             {"api_key", _credentials.Key},
@@ -76,9 +75,9 @@ public class LastFmClient : IInitializable
     }
 
     // Return object only for testing purpose 
-    public async Task<object> SendNowPlaying(string artist, string track)
+    public async Task SendNowPlaying(string artist, string track)
     {
-        Dictionary<string, string> parameters = new Dictionary<string, string>
+        Dictionary<string, string> parameters = new()
         {
             {"method", "track.updateNowPlaying"},
             {"artist", artist},
@@ -91,13 +90,13 @@ public class LastFmClient : IInitializable
 
         _log.Debug($"Got response for update now request {resp}");
 
-        return CheckError<object>(resp);
+        CheckError<object>(resp);
     }
 
     // Return object only for testing purpose 
     public async Task<ScrobbleResponse> SendScrobble(string artist, string track, long timestamp)
     {
-        Dictionary<string, string> parameters = new Dictionary<string, string>
+        Dictionary<string, string> parameters = new()
         {
             {"method", "track.scrobble"},
             {"artist", artist},
@@ -118,7 +117,7 @@ public class LastFmClient : IInitializable
     {
         string body = SignatureUtils.SignedParams(parameters, _credentials.Secret);
 
-        StringContent data = new StringContent(body, Encoding.UTF8, null);
+        StringContent data = new(body, Encoding.UTF8, null);
 
         HttpResponseMessage? httpResponse = await _client!.PostAsync(SCROBBLER_BASE_URL, data);
 

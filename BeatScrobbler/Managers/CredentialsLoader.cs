@@ -25,7 +25,7 @@ public class CredentialsLoader : ICredentialsLoader
 
         using Stream stream = assembly.GetManifestResourceStream(CREDENTIALS_LOCATION) ??
                               throw new Exception("Failed to load last fm credentials");
-        using StreamReader reader = new StreamReader(stream);
+        using StreamReader reader = new(stream);
         LastFmCredentials? credentials = JsonConvert.DeserializeObject<LastFmCredentials>(reader.ReadToEnd());
         _log.Debug("Credentials loaded");
         return credentials!;

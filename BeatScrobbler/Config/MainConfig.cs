@@ -13,10 +13,6 @@ public class MainConfig
 {
     public Action? OnChanged;
 
-    [NonNullable]
-    [UseConverter(typeof(VersionConverter))]
-    public Version Version { get; set; } = new("2.0.0");
-
     public virtual string? SessionName { get; set; } = null;
 
     public virtual string? SessionKey { get; set; } = null;

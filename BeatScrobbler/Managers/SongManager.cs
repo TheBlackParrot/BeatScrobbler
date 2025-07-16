@@ -3,140 +3,73 @@ using System.Threading.Tasks;
 using BeatScrobbler.Config;
 using BeatScrobbler.Utils;
 using SiraUtil.Services;
-using SiraUtil.Logging;
 using Zenject;
 
 namespace BeatScrobbler.Managers;
 
 public class SongManager : IInitializable, IDisposable
 {
-    [Inject] private readonly SiraLog _log = null!;
     [Inject] private readonly MainConfig _config = null!;
     [Inject] private readonly LastFmClient _client = null!;
     [Inject] private readonly ILevelFinisher _levelFinisher = null!;
-    [Inject] private readonly GameScenesManager _gameScenesManager = null!;
-
-    private BeatmapLevel? _lastBeatmap;
-    private CurrentSongData? _songData;
 
     public void Initialize()
     {
-        _levelFinisher.MissionLevelFinished += MissionFinished;
-        _levelFinisher.StandardLevelFinished += StandardFinished;
-        _gameScenesManager.transitionDidFinishEvent += TransitionFinished;
+        _levelFinisher.StandardLevelDidFinish += StandardFinished;
+        _levelFinisher.MultiplayerLevelDidFinish += MultiplayerFinished;
     }
 
     public void Dispose()
     {
-        _levelFinisher.MissionLevelFinished -= MissionFinished;
-        _levelFinisher.StandardLevelFinished -= StandardFinished;
-        _gameScenesManager.transitionDidFinishEvent -= TransitionFinished;
+        _levelFinisher.StandardLevelDidFinish -= StandardFinished;
+        _levelFinisher.MultiplayerLevelDidFinish -= MultiplayerFinished;
     }
 
-    private void TransitionFinished(GameScenesManager.SceneTransitionType sceneTransitionType, ScenesTransitionSetupDataSO scenesTransitionSetupDataSo, DiContainer container)
+    private void StandardFinished(StandardLevelScenesTransitionSetupDataSO standardLevelScenesTransitionSetupDataSo, LevelCompletionResults results)
     {
-        if (container.HasBinding<BeatmapLevel>())
+        _ = OnLevelFinished(standardLevelScenesTransitionSetupDataSo.beatmapLevel, results);
+    }
+    
+    private void MultiplayerFinished(MultiplayerLevelScenesTransitionSetupDataSO multiplayerLevelScenesTransitionSetupDataSo, MultiplayerResultsData results)
+    {
+        _ = OnLevelFinished(multiplayerLevelScenesTransitionSetupDataSo.beatmapLevel, results.localPlayerResultData.multiplayerLevelCompletionResults.levelCompletionResults);
+    }
+
+    private async Task OnLevelFinished(BeatmapLevel beatmapLevel, LevelCompletionResults results)
+    {
+        if (beatmapLevel.songDuration < 30 ||
+            results.endSongTime < beatmapLevel.songDuration * (_config.SongScrobbleLength / 100f) ||
+            string.IsNullOrEmpty(beatmapLevel.songAuthorName))
         {
-            BeatmapLevel? beatmap = container.Resolve<BeatmapLevel>();
-            PlayerDataModel? player = container.Resolve<PlayerDataModel>();
-            _ = OnLevelStarted(beatmap, player.playerData?.practiceSettings?.startSongTime ?? 0);
-        }
-    }
-
-    private void StandardFinished(LevelCompletionResults results)
-    {
-        _ = OnLevelFinished(results);
-    }
-
-    private void MissionFinished(MissionCompletionResults missionResults)
-    {
-        _ = OnLevelFinished(missionResults.levelCompletionResults);
-    }
-
-    // For 2 methods below check https://www.last.fm/api/scrobbling for more info
-    private async Task OnLevelStarted(BeatmapLevel currentBeatmap, float offset)
-    {
-        _lastBeatmap = currentBeatmap;
-        bool shouldBeScrobbled = _lastBeatmap.songDuration > 30;
-        long time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        if (string.IsNullOrEmpty(_lastBeatmap.songAuthorName))
-        {
-            shouldBeScrobbled = false;
-            _log.Debug("Skipping song with empty author name");
-        }
-        else
-        {
-            try
-            {
-                if (_config.NowPlayingEnabled)
-                {
-                    await _client.SendNowPlaying(
-                        _lastBeatmap.songAuthorName,
-                        _lastBeatmap.songName
-                    );
-                }
-            }
-            catch (Exception e)
-            {
-                _log.Warn(
-                    $"Failed to send now playing: {_lastBeatmap.songAuthorName} - {_lastBeatmap.songAuthorName}");
-                _log.Warn(e);
-            }
-        }
-
-        _songData = new CurrentSongData(offset, shouldBeScrobbled, time);
-    }
-
-    private async Task OnLevelFinished(LevelCompletionResults results)
-    {
-        CurrentSongData? toScrobble = _songData;
-
-        if (toScrobble is null || _lastBeatmap is null)
-        {
-            _log.Warn("Unexpected null in song data");
+            Plugin.Log.Info("Not scrobbling");
             return;
         }
 
-        _songData = null;
-
-        bool notEnoughPlayed = (results.endSongTime - toScrobble.Offset) / _lastBeatmap.songDuration <
-                               _config.SongScrobbleLength / 100d;
-
-        if (!toScrobble.ShouldBeScrobbled || notEnoughPlayed) return;
-
+        string trackName = string.IsNullOrEmpty(beatmapLevel.songSubName)
+            ? beatmapLevel.songName
+            : $"{beatmapLevel.songName} - {beatmapLevel.songSubName}";
+        
         try
         {
-            ScrobbleResponse res = await _client.SendScrobble(
-                _lastBeatmap.songAuthorName,
-                _lastBeatmap.songName,
-                toScrobble.StartTimestamp
-            );
-
-            if (res.Scrobbles.Attribute.Accepted != 1)
+            if (_config.ScrobbleEnabled)
             {
-                IgnoredMessage ignoredMessage = res.Scrobbles.Data.IgnoredMessage;
-                _log.Warn($"Scrobble was rejected with code: {ignoredMessage.Code}, message: {ignoredMessage.Text}");
+                ScrobbleResponse res = await _client.SendScrobble(
+                    beatmapLevel.songAuthorName,
+                    trackName,
+                    DateTimeOffset.Now.ToUnixTimeSeconds()
+                );
+                
+                if (res.Scrobbles.Attribute.Accepted != 1)
+                {
+                    IgnoredMessage ignoredMessage = res.Scrobbles.Data.IgnoredMessage;
+                    Plugin.Log.Warn($"Scrobble was rejected with code: {ignoredMessage.Code}, message: {ignoredMessage.Text}");
+                }
             }
         }
         catch (Exception e)
         {
-            _log.Warn($"Failed to scrobble: {_lastBeatmap.songAuthorName} - {_lastBeatmap.songAuthorName}");
-            _log.Warn(e);
-        }
-    }
-
-    private class CurrentSongData
-    {
-        internal readonly float Offset;
-        internal readonly bool ShouldBeScrobbled;
-        internal readonly long StartTimestamp;
-
-        internal CurrentSongData(float offset, bool shouldBeScrobbled, long startTimestamp)
-        {
-            ShouldBeScrobbled = shouldBeScrobbled;
-            StartTimestamp = startTimestamp;
-            Offset = offset;
+            Plugin.Log.Warn($"Failed to send now playing: {beatmapLevel.songAuthorName} - {trackName}");
+            Plugin.Log.Warn(e);
         }
     }
 }

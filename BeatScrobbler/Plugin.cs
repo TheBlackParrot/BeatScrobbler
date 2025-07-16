@@ -1,33 +1,40 @@
 ﻿using BeatScrobbler.Config;
 using IPA;
 using IPA.Config.Stores;
-using IPA.Loader;
-using IPA.Logging;
-using SiraUtil;
+using JetBrains.Annotations;
 using SiraUtil.Zenject;
 using IPAConfig = IPA.Config.Config;
+using IPALogger = IPA.Logging.Logger;
 
 namespace BeatScrobbler;
 
 [Plugin(RuntimeOptions.DynamicInit)]
 [NoEnableDisable]
+[UsedImplicitly]
 public class Plugin
 {
-    private readonly Logger _log;
-
+    // ReSharper disable once MemberCanBePrivate.Global
+    internal static IPALogger Log { get; private set; } = null!;
+    
     [Init]
-    public Plugin(IPAConfig cfg, Logger log, Zenjector injector, PluginMetadata metadata)
+    public Plugin(IPAConfig cfg, IPALogger log, Zenjector zenjector)
     {
-        _log = log;
+        Log = log;
+        zenjector.UseLogger(Log);
+        
+        MainConfig config = cfg.Generated<MainConfig>();
+        
+        zenjector.Install(Location.App, container => { container.BindInstance(config).AsSingle(); });
+        zenjector.Install<Installers.MenuInstaller>(Location.Menu);
+        zenjector.UseAutoBinder();
 
-        MainConfig? config = cfg.Generated<MainConfig>();
-        config.Version = metadata.HVersion;
+        log.Info("Plugin loaded");
+    }
 
-        injector.UseLogger(log);
-        injector.Install(Location.App, Container => { Container.BindInstance(config).AsSingle(); });
-        injector.Install<Installers.MenuInstaller>(Location.Menu);
-        injector.UseAutoBinder();
-
-        _log.Debug("Finished plugin initialization");
+    public static void DebugMessage(string message)
+    {
+#if DEBUG
+        Log.Info(message);
+#endif
     }
 }
