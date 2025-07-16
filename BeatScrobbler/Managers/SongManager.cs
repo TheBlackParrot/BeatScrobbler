@@ -14,19 +14,48 @@ public class SongManager : IInitializable, IDisposable
     [Inject] private readonly MainConfig _config = null!;
     [Inject] private readonly LastFmClient _client = null!;
     [Inject] private readonly ILevelFinisher _levelFinisher = null!;
+    [Inject] private readonly StandardLevelScenesTransitionSetupDataSO _standardLevelScenesTransitionSetupDataSo = null!;
+    [Inject] private readonly MultiplayerLevelScenesTransitionSetupDataSO _multiplayerLevelScenesTransitionSetupDataSo = null!;
+    
+    private static BeatmapLevel? _startedBeatmapLevel;
 
     public void Initialize()
     {
         _levelFinisher.StandardLevelDidFinish += StandardFinished;
         _levelFinisher.MultiplayerLevelDidFinish += MultiplayerFinished;
+        
+        if (_standardLevelScenesTransitionSetupDataSo != null)
+        {
+            _standardLevelScenesTransitionSetupDataSo.beforeScenesWillBeActivatedEvent += BeforeScenesWillBeActivated;
+        }
+
+        if (_multiplayerLevelScenesTransitionSetupDataSo != null)
+        {
+            _multiplayerLevelScenesTransitionSetupDataSo.beforeScenesWillBeActivatedEvent += BeforeScenesWillBeActivated;
+        }
     }
 
     public void Dispose()
     {
         _levelFinisher.StandardLevelDidFinish -= StandardFinished;
         _levelFinisher.MultiplayerLevelDidFinish -= MultiplayerFinished;
-    }
+        
+        if (_standardLevelScenesTransitionSetupDataSo != null)
+        {
+            _standardLevelScenesTransitionSetupDataSo.beforeScenesWillBeActivatedEvent -= BeforeScenesWillBeActivated;
+        }
 
+        if (_multiplayerLevelScenesTransitionSetupDataSo != null)
+        {
+            _multiplayerLevelScenesTransitionSetupDataSo.beforeScenesWillBeActivatedEvent -= BeforeScenesWillBeActivated;
+        }
+    }
+    
+    private void BeforeScenesWillBeActivated()
+    {
+        _ = OnLevelStarted();
+    }
+    
     private void StandardFinished(StandardLevelScenesTransitionSetupDataSO standardLevelScenesTransitionSetupDataSo, LevelCompletionResults results)
     {
         _ = OnLevelFinished(standardLevelScenesTransitionSetupDataSo.beatmapLevel, results);
@@ -35,6 +64,50 @@ public class SongManager : IInitializable, IDisposable
     private void MultiplayerFinished(MultiplayerLevelScenesTransitionSetupDataSO multiplayerLevelScenesTransitionSetupDataSo, MultiplayerResultsData results)
     {
         _ = OnLevelFinished(multiplayerLevelScenesTransitionSetupDataSo.beatmapLevel, results.localPlayerResultData.multiplayerLevelCompletionResults.levelCompletionResults);
+    }
+
+    private async Task OnLevelStarted()
+    {
+        _startedBeatmapLevel = null;
+        if (_standardLevelScenesTransitionSetupDataSo != null)
+        {
+            _startedBeatmapLevel = _standardLevelScenesTransitionSetupDataSo.beatmapLevel;
+        } else if (_multiplayerLevelScenesTransitionSetupDataSo != null)
+        {
+            _startedBeatmapLevel = _multiplayerLevelScenesTransitionSetupDataSo.beatmapLevel;
+        }
+
+        if (_startedBeatmapLevel == null)
+        {
+            Plugin.DebugMessage("startedBeatmapLevel is null");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(_startedBeatmapLevel.songAuthorName))
+        {
+            Plugin.Log.Info("Skipping song with empty author name");
+            return;
+        }
+
+        string trackName = string.IsNullOrEmpty(_startedBeatmapLevel.songSubName)
+            ? _startedBeatmapLevel.songName
+            : $"{_startedBeatmapLevel.songName} - {_startedBeatmapLevel.songSubName}";
+
+        try
+        {
+            if (_config.NowPlayingEnabled)
+            {
+                await _client.SendNowPlaying(
+                    _startedBeatmapLevel.songAuthorName,
+                    trackName
+                );
+            }
+        }
+        catch (Exception e)
+        {
+            Plugin.Log.Warn($"Failed to send now playing: {_startedBeatmapLevel.songAuthorName} - {trackName}");
+            Plugin.Log.Warn(e);
+        }
     }
 
     private async Task OnLevelFinished(BeatmapLevel beatmapLevel, LevelCompletionResults results)
@@ -70,7 +143,7 @@ public class SongManager : IInitializable, IDisposable
         }
         catch (Exception e)
         {
-            Plugin.Log.Warn($"Failed to send now playing: {beatmapLevel.songAuthorName} - {trackName}");
+            Plugin.Log.Warn($"Failed to send scrobble: {beatmapLevel.songAuthorName} - {trackName}");
             Plugin.Log.Warn(e);
         }
     }
