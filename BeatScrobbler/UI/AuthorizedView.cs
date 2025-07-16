@@ -21,7 +21,7 @@ public class AuthorizedView : AbstractView
         _config.SessionKey = null;
         _config.SessionName = null;
         _configView.Authorized = false;
-        _log.Debug("Logged out");
+        Plugin.Log.Info("Logged out");
         ActionFinished?.Invoke();
     }
 }

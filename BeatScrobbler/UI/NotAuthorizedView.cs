@@ -66,7 +66,7 @@ public class NotAuthorizedView : AbstractView
         _config.SessionName = authSession.Name;
         _configView.Authorized = true;
         _token = null;
-        _log.Debug($"Auth confirmed for {authSession.Name}");
+        Plugin.Log.Info($"Auth confirmed for {authSession.Name}");
         ActionFinished?.Invoke();
     }
 }

@@ -4,16 +4,14 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using BeatScrobbler.Utils;
-using SiraUtil.Logging;
-using Zenject;
 
 namespace BeatScrobbler.UI;
 
 public abstract class AbstractView : BSMLAutomaticViewController
 {
-    [Inject] protected readonly SiraLog _log = null!;
-
-    [UIParams] protected BSMLParserParams _parserParams = null!;
+    // ReSharper disable once MemberCanBePrivate.Global
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    [UIParams] protected BSMLParserParams ParserParams = null!;
 
     private string _errorModalText = "Unknown error";
     [UIValue("error-modal-text")]
@@ -32,7 +30,7 @@ public abstract class AbstractView : BSMLAutomaticViewController
     protected void ModalConfirm()
     {
         _modalConfirm?.Invoke();
-        _parserParams.EmitEvent("hide-info-modal");
+        ParserParams.EmitEvent("hide-info-modal");
     }
 
     protected async void SafeAwait<T>(Task<T> task, Action<T> onSuccess, Action? onError = null)
@@ -50,9 +48,9 @@ public abstract class AbstractView : BSMLAutomaticViewController
 
     private void HandleException(Exception e)
     {
-        _log.Error(e);
+        Plugin.Log.Error(e);
         
-        string? message = $"Error: {e.Message}. ";
+        string message = $"Error: {e.Message}. ";
         
         if (e is LastFmException lastException)
         {
@@ -72,12 +70,12 @@ public abstract class AbstractView : BSMLAutomaticViewController
     protected void ShowInfoModal(Action onConfirm)
     {
         _modalConfirm = onConfirm;
-        _parserParams.EmitEvent("show-info-modal");
+        ParserParams.EmitEvent("show-info-modal");
     }
 
-    protected void ShowErrorModal(string text)
+    private void ShowErrorModal(string text)
     {
         ErrorModalText = text;
-        _parserParams.EmitEvent("show-error-modal");
+        ParserParams.EmitEvent("show-error-modal");
     }
 }

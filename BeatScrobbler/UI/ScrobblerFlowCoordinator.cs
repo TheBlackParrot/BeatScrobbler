@@ -1,5 +1,4 @@
-﻿using BeatSaberMarkupLanguage;
-using BeatScrobbler.Config;
+﻿using BeatScrobbler.Config;
 using HMUI;
 using Zenject;
 

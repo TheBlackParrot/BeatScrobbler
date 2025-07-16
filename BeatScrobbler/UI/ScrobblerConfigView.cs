@@ -1,7 +1,7 @@
 ﻿using System;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatScrobbler.Config;
-using BeatScrobbler.Managers;
+using UnityEngine;
 using Zenject;
 
 namespace BeatScrobbler.UI;
@@ -13,7 +13,6 @@ public class ScrobblerConfigView : AbstractView
     public event Action<bool>? AuthClicked;
 
     [Inject] private readonly MainConfig _config = null!;
-    [Inject] private readonly ILinksOpener _linksOpener = null!;
 
     private bool _authorized;
 
@@ -83,13 +82,12 @@ public class ScrobblerConfigView : AbstractView
     [UIAction("clicked-show-auth-button")]
     protected void ClickedShow()
     {
-        _log.Debug("Auth clicked");
         AuthClicked?.Invoke(Authorized);
     }
 
     [UIAction("clicked-github")]
     protected void ClickedGithub()
     {
-        ShowInfoModal(() => _linksOpener.OpenLink("https://github.com/furryaccount/BeatScrobbler"));
+        ShowInfoModal(() => Application.OpenURL("https://github.com/TheBlackParrot/BeatScrobbler"));
     }
 }

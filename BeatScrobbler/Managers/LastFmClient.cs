@@ -4,12 +4,14 @@ using System.Text;
 using System.Threading.Tasks;
 using BeatScrobbler.Config;
 using BeatScrobbler.Utils;
+using JetBrains.Annotations;
 using Newtonsoft.Json.Linq;
-using SiraUtil.Logging;
+using UnityEngine;
 using Zenject;
 
 namespace BeatScrobbler.Managers;
 
+[UsedImplicitly]
 public class LastFmClient : IInitializable
 {
     private const string SCROBBLER_BASE_URL = "https://ws.audioscrobbler.com/2.0/";
@@ -17,8 +19,6 @@ public class LastFmClient : IInitializable
     
     [Inject] private readonly MainConfig _config = null!;
     [Inject] private readonly ICredentialsLoader _credentialsLoader = null!;
-    [Inject] private readonly ILinksOpener _linksOpener = null!;
-    [Inject] private readonly SiraLog _log = null!;
 
     private HttpClient? _client;
     private LastFmCredentials _credentials = null!;
@@ -32,7 +32,7 @@ public class LastFmClient : IInitializable
 
     public async Task<string> GetToken()
     {
-        _log.Debug("Sending token request");
+        Plugin.DebugMessage("Sending token request");
 
         string url = $"{SCROBBLER_BASE_URL}?method=auth.gettoken&api_key={_credentials.Key}&format=json";
 
@@ -40,18 +40,18 @@ public class LastFmClient : IInitializable
 
         string? resp = await httpResponse.Content.ReadAsStringAsync();
 
-        _log.Debug("Got response for token request");
+        Plugin.DebugMessage("Got response for token request");
 
         return CheckError<AuthToken>(resp).Token;
     }
 
     public void Authorize(string authToken)
     {
-        _log.Debug("Sending auth request");
+        Plugin.DebugMessage("Sending auth request");
 
         string url = $"{LAST_FM_BASE_URL}/auth/?api_key={_credentials.Key}&token={authToken}";
 
-        _linksOpener.OpenLink(url);
+        Application.OpenURL(url);
     }
 
     public async Task<AuthSession> GetSession(string token)
@@ -69,12 +69,11 @@ public class LastFmClient : IInitializable
 
         string? resp = await httpResponse.Content.ReadAsStringAsync();
 
-        _log.Debug($"Got response for auth request {resp}");
+        Plugin.DebugMessage($"Got response for auth request {resp}");
 
         return CheckError<AuthSessionResponse>(resp).Session;
     }
-
-    // Return object only for testing purpose 
+    
     public async Task SendNowPlaying(string artist, string track)
     {
         Dictionary<string, string> parameters = new()
@@ -88,12 +87,11 @@ public class LastFmClient : IInitializable
 
         string resp = await PostAsync(parameters);
 
-        _log.Debug($"Got response for update now request {resp}");
+        Plugin.DebugMessage($"Got response for update now request {resp}");
 
         CheckError<object>(resp);
     }
-
-    // Return object only for testing purpose 
+    
     public async Task<ScrobbleResponse> SendScrobble(string artist, string track, long timestamp)
     {
         Dictionary<string, string> parameters = new()
@@ -108,7 +106,7 @@ public class LastFmClient : IInitializable
 
         string resp = await PostAsync(parameters);
 
-        _log.Debug($"Got response for scrobble request {resp}");
+        Plugin.DebugMessage($"Got response for scrobble request {resp}");
 
         return CheckError<ScrobbleResponse>(resp);
     }

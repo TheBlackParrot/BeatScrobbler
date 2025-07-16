@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
-using IPA.Config.Stores.Attributes;
-using SiraUtil.Converters;
-using Version = Hive.Versioning.Version;
+using JetBrains.Annotations;
+
+// ReSharper disable RedundantDefaultMemberInitializer
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 
@@ -13,22 +13,23 @@ public class MainConfig
 {
     public Action? OnChanged;
 
-    public virtual string? SessionName { get; set; } = null;
+    public string? SessionName { get; set; }
 
-    public virtual string? SessionKey { get; set; } = null;
+    public string? SessionKey { get; set; }
 
-    public virtual int SongScrobbleLength { get; set; } = 50;
+    public int SongScrobbleLength { get; set; } = 50;
 
-    public virtual bool ScrobbleEnabled { get; set; } = true;
+    public bool ScrobbleEnabled { get; set; } = true;
     
-    public virtual bool NowPlayingEnabled { get; set; } = false;
+    public bool NowPlayingEnabled { get; set; } = false;
 
     public bool IsAuthorized()
     {
         return SessionName is not null && SessionKey is not null;
     }
 
-    public virtual void Changed()
+    [UsedImplicitly]
+    public void Changed()
     {
         OnChanged?.Invoke();
     }

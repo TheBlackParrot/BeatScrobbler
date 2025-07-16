@@ -2,11 +2,13 @@
 using System.Threading.Tasks;
 using BeatScrobbler.Config;
 using BeatScrobbler.Utils;
+using JetBrains.Annotations;
 using SiraUtil.Services;
 using Zenject;
 
 namespace BeatScrobbler.Managers;
 
+[UsedImplicitly]
 public class SongManager : IInitializable, IDisposable
 {
     [Inject] private readonly MainConfig _config = null!;
